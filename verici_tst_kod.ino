@@ -2,13 +2,13 @@
 #include <nRF24L01.h>
 #include <SPI.h>
 
-Enrf24 nRF(9, 10, 2);  // CE , CSN/CS/SS , IRQ bacaklarının Arduino ile bağlantıları tanımlandı
+Enrf24 nRF(9, 10, 3);  // CE , CSN/CS/SS , IRQ bacaklarının Arduino ile bağlantıları tanımlandı
 
 // verici adresi tanımlandı aynı adres alıcıda da tanımlanmalıdır
 const byte verici_adresi[] = { 0xDE, 0xAD, 0xBE, 0x0F, 0x01 };
 
 int ac_kapat=0; // alıcının LED'i kapatıp açmak için gerekli bir değişken tanımlandı
-int BUTON=3;
+int BUTON=4;
 
 void setup() 
 {
@@ -37,8 +37,7 @@ void loop()
   else{
      Serial.println("K");
      nRF.print("K"); 
-    nRF.flush();  
-      
+     nRF.flush();  
   }
    delay(200); 
   
