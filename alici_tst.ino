@@ -3,46 +3,97 @@
 #include <string.h> // atoi() fonksiyonu için string kütüphanesi tanımlanıyor
 #include <SPI.h>
 
-Enrf24 nRF(9, 10, 2);  // CE , CSN/CS/SS , IRQ bacaklarının Arduino ile bağlantıları tanımlandı
+Enrf24 nRF(9,10, 2);    // CE , CSN/CS/SS , IRQ bacaklarının Arduino ile bağlantıları tanımlandı
 
 const byte alici_adresi[] = { 0xDE, 0xAD, 0xBE, 0x0F, 0x01 };
 
-int LED1=3;
+int LED1=7;
+int LED2=8;
+
+int ENA = A0;
+int MTR1A = 3;
+int MTR1B = 4;
+int ENB = A1;
+int MTR2A = 6;
+int MTR2B = 5;
 
 void setup() 
 {
-  pinMode(LED1, OUTPUT); // aç kapat yapılacak LED için pin modu çıkış ayarlandı
+  pinMode(LED1, OUTPUT); 
+  pinMode(LED2, OUTPUT); 
 
   SPI.begin(); // SPI başlat
   SPI.setDataMode(SPI_MODE0); // SPI MODE0 seçildi, nrf24l01 MODE0 ile iletişim kurmaktadır
   SPI.setBitOrder(MSBFIRST); // bit sıralaması MSB'den LSB'ye doğru ayarlandı
-
-  // datarate 250000/1000000/2000000, channel 0/125
-  // 1000000 datarate seçildi , 124 nolu kanal seçildi
   nRF.begin(1000000,124); 
-
   nRF.setRXaddress(alici_adresi); // alıcı adresi ayarlandı
-  
   nRF.enableRX();  // Dinlemeye başla
-}
+
+  pinMode(ENA, OUTPUT);
+  pinMode(ENB, OUTPUT);    
+  for(int i=3; i<=6; i++)
+    pinMode(1, OUTPUT);  
+  }
 
 void loop()
 {
-  char gelen_bilgi[33]; // gelen string türünde bilgi için geçici dizi değişken
-  int bilgi=0; // string değeri sayısal değere dönüştürdükten sonra aktarılacak değişken tanımlanıyor
+  char gelen_bilgi[33]; 
+  int bilgi=0; 
 
-  if (nRF.read(gelen_bilgi))  // bilgi geldiyse bunu gelen_bilgi değişkenine aktar
+  if (nRF.read(gelen_bilgi))  
   {
     bilgi = atoi(gelen_bilgi);
-
     
-    if(gelen_bilgi[0]=='A') // eğer gelen_bilgi dizinin ilk karakteri A ise
-    {
-      digitalWrite(LED1, 1); // LED2'yi yak
-    }
-    else if(gelen_bilgi[0]=='K') // eğer gelen_bilgi dizinin ilk karakteri K ise
-    {
-      digitalWrite(LED1, 0); // LED2'yi söndür
-    }
+     Serial.println(gelen_bilgi[0]);   
+    
+    if(gelen_bilgi[0]=='F')   {
+            Forward();
+    } 
+    else if(gelen_bilgi[0]=='B')   {
+         Backward();
+    } 
+    else if(gelen_bilgi[0]=='M') {
+        Stop();
+    } 
   }
+  
+}
+
+void Forward(){
+  digitalWrite(LED1, 1); 
+  digitalWrite(LED2, 0); 
+
+  analogWrite(ENA,150);
+  digitalWrite(MTR1A,1);
+  digitalWrite(MTR1B,0);   
+
+  analogWrite(ENB,150);
+  digitalWrite(MTR2A,1);
+  digitalWrite(MTR2B,0);   
+}
+
+void Backward(){
+  digitalWrite(LED1, 0); 
+  digitalWrite(LED2, 1); 
+
+  analogWrite(ENA,150);
+  digitalWrite(MTR1A,0);
+  digitalWrite(MTR1B,1);  
+
+  analogWrite(ENB,150);
+  digitalWrite(MTR2A,0);
+  digitalWrite(MTR2B,1);        
+}
+
+void Stop(){
+  digitalWrite(LED1, 0); 
+  digitalWrite(LED2, 0);    
+  
+  analogWrite(ENA,0);
+  digitalWrite(MTR1A,0);
+  digitalWrite(MTR1B,0); 
+
+  analogWrite(ENB,0);
+  digitalWrite(MTR2A,0);
+  digitalWrite(MTR2B,0);          
 }
