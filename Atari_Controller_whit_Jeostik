@@ -1,0 +1,58 @@
+#include <Enrf24.h>
+#include <nRF24L01.h>
+#include <SPI.h>
+
+Enrf24 nRF(9, 10, 2);  // CE , CSN/CS/SS , IRQ bacaklarının Arduino ile bağlantıları tanımlandı
+
+// verici adresi tanımlandı aynı adres alıcıda da tanımlanmalıdır
+const byte verici_adresi[] = { 0xDE, 0xAD, 0xBE, 0x0F, 0x01 };
+
+void setup() {
+  Serial.begin(9600);
+  SPI.begin(); // SPI başlat
+  SPI.setDataMode(SPI_MODE0); // SPI MODE0 seçildi, nrf24l01 MODE0 ile iletişim kurmaktadır
+  SPI.setBitOrder(MSBFIRST); // bit sıralaması MSB'den LSB'ye doğru ayarlandı
+  nRF.begin(1000000,124);  
+  nRF.setTXaddress(verici_adresi); // verici adresi ayarlandı
+
+}
+
+void loop() {
+  int X = analogRead(A0);
+  int Y = analogRead(A1);
+
+  if(Y < 750 && Y > 250){
+    if(X >= 750){
+      Serial.println("F");
+      nRF.print("F");
+      nRF.flush();
+    }
+    else if(X <= 250)
+    {
+      Serial.println("B");
+      nRF.print("B");
+      nRF.flush();
+    }
+    else{
+      Serial.println("M");
+      nRF.print("M");
+      nRF.flush();
+    }
+  }
+
+  else
+  {
+      if(Y >= 750){
+      Serial.println("R");
+      nRF.print("R");
+      nRF.flush();
+    }
+    else if(Y <= 250)
+    {
+      Serial.println("L");
+      nRF.print("R");
+      nRF.flush();
+    }
+  }
+  delay(200);
+}
